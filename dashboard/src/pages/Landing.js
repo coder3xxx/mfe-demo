@@ -8,21 +8,8 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import MaterialLink from '@material-ui/core/Link';
 import { Link } from 'react-router-dom';
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <MaterialLink component={Link} to="/" color="inherit">
-        Your Website
-      </MaterialLink>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+import { useStore } from '../store';
 
 const useStyles = makeStyles((theme) => ({
   '@global': {
@@ -42,7 +29,6 @@ const useStyles = makeStyles((theme) => ({
   },
   cardGrid: {
     paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8),
   },
   card: {
     height: '100%',
@@ -55,16 +41,20 @@ const useStyles = makeStyles((theme) => ({
   cardContent: {
     flexGrow: 1,
   },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6),
-  },
+  editText: {
+    fontSize: '0.8125rem',
+    fontWeight: 500,
+    color: '#3f51b5',
+    fontFamily: 'sans-serif'
+  }
 }));
 
 const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export default function Album() {
   const classes = useStyles();
+
+  const { userInfo, isAuth } = useStore();
 
   return (
     <React.Fragment>
@@ -135,9 +125,11 @@ export default function Album() {
                     <Button size="small" color="primary">
                       View
                     </Button>
-                    <Button size="small" color="primary">
-                      Edit
-                    </Button>
+                    {isAuth && (
+                      <Link to='/edit' className={classes.editText}>
+                        EDIT
+                      </Link>
+                    )}
                   </CardActions>
                 </Card>
               </Grid>
@@ -145,22 +137,6 @@ export default function Album() {
           </Grid>
         </Container>
       </main>
-      {/* Footer */}
-      <footer className={classes.footer}>
-        <Typography variant="h6" align="center" gutterBottom>
-          Footer
-        </Typography>
-        <Typography
-          variant="subtitle1"
-          align="center"
-          color="textSecondary"
-          component="p"
-        >
-          Something here to give the footer a purpose!
-        </Typography>
-        <Copyright />
-      </footer>
-      {/* End footer */}
     </React.Fragment>
   );
 }

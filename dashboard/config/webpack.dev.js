@@ -6,18 +6,29 @@ const packageJson = require('../package.json');
 
 const devConfig = {
   mode: 'development',
+  // devtool: 'eval-source-map',
+  // entry: {
+  //   app: './src/index.js',
+  // },
+  // output: {
+  //   publicPath: '/',
+  //   clean: true,
+  // },
   devServer: {
-    port: 8081,
+    port: 5001,
     historyApiFallback: {
-      index: 'index.html'
-    }
+      index: '/index.html'
+    },
+    hot: true,
+    liveReload: true,
+    // open: true,
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: 'marketing',
+      name: 'dashboard',
       filename: 'remoteEntry.js',
       exposes: {
-        './MarketingApp': './src/bootstrap'
+        './DashboardApp': './src/main'
       },
       shared: packageJson.dependencies,
     }),

@@ -1,27 +1,38 @@
 import React from 'react';
-import { Switch, Route, Router } from 'react-router-dom';
 import {
   StylesProvider,
   createGenerateClassName,
 } from '@material-ui/core/styles';
-
-import Landing from './components/Landing';
-import Pricing from './components/Pricing';
-
-const generateClassName = createGenerateClassName({
-  productionPrefix: 'ma',
-});
+import { useEffect } from 'react';
+import { useStore } from './store';
+import { isEmpty } from 'lodash';
+import AppRouter from './route';
 
 export default ({ history }) => {
+  const { setUserInfo, setIsAuth } = useStore();
+
+  const generateClassName = createGenerateClassName({
+    productionPrefix: 'dash',
+  });
+
+  useEffect(() => {
+    // Listener login event from container
+    const listenerAuthorization = ({ detail }) => {
+      setUserInfo(detail);
+      setIsAuth(!isEmpty(detail));
+    }
+
+    window.addEventListener('AUTHORIZATION_TO_SUB_APP', listenerAuthorization);
+
+    return () => {
+      window.removeEventListener('AUTHORIZATION_TO_SUB_APP', listenerAuthorization);
+    }
+  }, []);
+
   return (
     <div>
       <StylesProvider generateClassName={generateClassName}>
-        <Router history={history}>
-          <Switch>
-            <Route exact path="/pricing" component={Pricing} />
-            <Route path="/" component={Landing} />
-          </Switch>
-        </Router>
+        <AppRouter history={history} />
       </StylesProvider>
     </div>
   );

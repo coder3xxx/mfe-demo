@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link as RouterLink } from 'react-router-dom';
+import classNames from 'classnames';
+import { isEmpty } from 'lodash';
+import cookies from 'js-cookie';
+import { useHistory } from 'react-router-dom';
+import { useStore } from '../store';
+import { Avatar } from '@material-ui/core';
+import { crossLoginToSubApp } from '../helpers/login';
 
 const useStyles = makeStyles((theme) => ({
   '@global': {
@@ -19,47 +26,52 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     borderBottom: `1px solid ${theme.palette.divider}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
   },
   toolbar: {
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    background: '#fffecc',
   },
   link: {
     margin: theme.spacing(1, 1.5),
   },
-  heroContent: {
-    padding: theme.spacing(8, 0, 6),
+  ml2: {
+    marginLeft: '8px !important'
   },
-  cardHeader: {
-    backgroundColor:
-      theme.palette.type === 'light'
-        ? theme.palette.grey[200]
-        : theme.palette.grey[700],
-  },
-  cardPricing: {
+  toolbarRight: {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'baseline',
-    marginBottom: theme.spacing(2),
+    alignItems: 'center'
   },
-  footer: {
-    borderTop: `1px solid ${theme.palette.divider}`,
-    marginTop: theme.spacing(8),
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: theme.spacing(6),
-      paddingBottom: theme.spacing(6),
-    },
-  },
+  accountName: {
+    marginLeft: theme.spacing(1),
+    maxWidth: '80px',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+  }
 }));
 
-export default function Header({ signedIn, onSignOut }) {
+export default function Header() {
   const classes = useStyles();
 
-  const onClick = () => {
-    if (signedIn && onSignOut) {
-      onSignOut();
+  const history = useHistory();
+
+  const { userInfo, setUserInfo } = useStore();
+
+  const signedIn = useMemo(
+    () => !isEmpty(userInfo),
+    [userInfo]
+  );
+
+  const onSignOut = () => {
+    if (signedIn) {
+      cookies.remove('token');
+      setUserInfo({});
+      crossLoginToSubApp({});
+      history.push('/');
     }
   };
 
@@ -79,18 +91,47 @@ export default function Header({ signedIn, onSignOut }) {
             component={RouterLink}
             to="/"
           >
-            App
+            Shell App
           </Typography>
-          <Button
-            color="primary"
-            variant="outlined"
-            className={classes.link}
-            component={RouterLink}
-            to={signedIn ? '/' : '/auth/signin'}
-            onClick={onClick}
-          >
-            {signedIn ? 'Logout' : 'Login'}
-          </Button>
+          {
+            !signedIn ? (
+              <div className={classes.toolbarRight}>
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  className={classes.link}
+                  component={RouterLink}
+                  to='/signup'
+                >
+                  signup
+                </Button>
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  className={classNames(classes.link, classes.ml2)}
+                  component={RouterLink}
+                  to='/login'
+                >
+                  Login
+                </Button>
+              </div>) : (
+              <div className={classes.toolbarRight}>
+                <Avatar sx={{ width: 32, height: 32 }}>
+                  {userInfo.name?.[0]}
+                </Avatar>
+                <span className={classes.accountName}>{userInfo.name}</span>
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  className={classNames(classes.link, classes.ml2)}
+                  onClick={onSignOut}
+                >
+                  Logout
+                </Button>
+              </div>
+            )
+          }
+
         </Toolbar>
       </AppBar>
     </React.Fragment>

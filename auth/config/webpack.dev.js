@@ -1,24 +1,28 @@
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
-const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const commonConfig = require('./webpack.common');
+const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const packageJson = require('../package.json');
 const path = require('path');
-require('dotenv').config({ path: './.env' });
+require('dotenv').config({ path: './.env' }); 
 
 const devConfig = {
   mode: 'development',
-  // devtool: 'eval-source-map',
-  // entry: {
-  //   app: './src/index.js',
-  // },
+  devtool: 'eval-source-map',
+  entry: {
+    app: './src/index.js',
+  },
   // output: {
   //   publicPath: '/',
   //   clean: true,
+  //   filename: '[name].[contenthash].bundle.js',
+  //   chunkFilename: '[name].[contenthash].chunk.js',
   // },
   devServer: {
-    port: 5000,
+    port: 5002,
     historyApiFallback: {
       index: '/index.html'
     },
@@ -72,17 +76,27 @@ const devConfig = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: 'container',
-      remotes: {
-        dashboard: 'dashboard@http://localhost:5001/remoteEntry.js',
-        auth: 'auth@http://localhost:5002/remoteEntry.js',
+      name: 'auth',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './AuthApp': './src/main'
       },
       shared: packageJson.dependencies,
     }),
+    new HtmlWebpackPlugin({
+      template: './public/index.html'
+    }),
+    // new CopyWebpackPlugin({
+    //   patterns: [
+    //     {
+    //       from: path.join(__dirname, '/public/mockServiceWorker.js'),
+    //       to: '',
+    //     },]
+    // }),
     new webpack.DefinePlugin({
       "process.env": JSON.stringify(process.env),
     }),
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin()
   ]
 }
 

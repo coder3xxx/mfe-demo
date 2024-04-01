@@ -1,9 +1,10 @@
-import { mount } from 'marketing/MarketingApp';
-import React, { useRef, useLayoutEffect } from 'react';
+import { mount } from 'dashboard/DashboardApp';
+import React, { useRef, useLayoutEffect, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 export default () => {
   const ref = useRef(null);
+
   const history = useHistory();
 
   useLayoutEffect(() => {
